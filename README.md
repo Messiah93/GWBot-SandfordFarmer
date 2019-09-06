@@ -7,7 +7,7 @@ Guild Wars Sandford Farmer is GWA2 based BOT writed in AutoIT. it's used to farm
 
 # How to use
 1. Open Guild Wars
-2. Login to your character
+2. Login to your pre-searing character
 3. Launch bot using "[BOT] Sandford Farmer.au3"
 4. Choose your logged character name
 5. Chose the Farm type you want to start
