@@ -14,7 +14,7 @@
 #include "lib/GWC_M93_API.au3"
 
 
-global $BOTVersion = "v0.05b"
+global $BOTVersion = "v0.06"
 
 global $AscalonMapID = 148
 global $AshfordMapID = 164
@@ -27,6 +27,9 @@ global $GreenHillsMapID = 160
 global $RegentValleyMapID = 162
 global $WizzardFollyMapID = 161
 global $CatacombsMapID = 145
+
+global $MapRegionIDList = [2, 2, 2, 2, 2, 2, 2, -2, 1, 3, 4]
+global $MapLanguageIDList = [0, 2, 3, 4, 5, 9, 10, 0, 0, 0, 0]
 
 global $GoldsID = 2511
 global $RedIrisID = 2994
@@ -120,12 +123,23 @@ func Main ()
     GUI_Setup()
     
     while not $BOTRunning
-        Sleep(500)
+        RandomSleep(350, 650)
     wend
     
     if not Initialize($CharacterName, true) then
         MsgBox(0, "Error", "Could not find a Guild Wars client with a character named '" & $CharacterName & "'.")
         exit
+    endif
+    
+    if M93_GetInventoryItemByModelID($SummoningStoneModelID) == null then
+        if $CurrentFarm <> "Red Iris Flower" then
+            SendChat("bonus", "/")
+            RandomSleep(750, 1250)
+            
+            if not M93_GetInventoryItemByModelID($SummoningStoneModelID) == null then
+                MsgBox(0, "Warning", "You do not seem to own Summoning Stone for help you, the farm can become very hard without it and can fail. Try to hit /bonus for retrieve it if you have it on your account.")
+            endif
+        endif
     endif
     
     MainLoop()
@@ -134,7 +148,7 @@ endfunc
 func MainLoop ()
     while true
         while not $BOTRunning
-            Sleep(500)
+            RandomSleep(450, 550)
         wend
         
         switch $CurrentFarm
@@ -342,9 +356,9 @@ func GoToAscalon ()
         return
     endif
     
-    TravelTo($AscalonMapID)
+    RandomTravelTo($AscalonMapID)
     
-    Sleep(2500)
+    RandomSleep(2000, 3000)
 endfunc
 
 func GoToAshford ()
@@ -352,9 +366,9 @@ func GoToAshford ()
         return
     endif
     
-    TravelTo($AshfordMapID)
+    RandomTravelTo($AshfordMapID)
     
-    Sleep(2500)
+    RandomSleep(2000, 3000)
 endfunc
 
 func GoToFoiblesFair ()
@@ -362,9 +376,9 @@ func GoToFoiblesFair ()
         return
     endif
     
-    TravelTo($FoiblesFairMapID)
+    RandomTravelTo($FoiblesFairMapID)
     
-    Sleep(2500)
+    RandomSleep(2000, 3000)
 endfunc
 
 func GoToBarradin ()
@@ -372,9 +386,9 @@ func GoToBarradin ()
         return
     endif
     
-    TravelTo($BarradinMapID)
+    RandomTravelTo($BarradinMapID)
     
-    Sleep(2500)
+    RandomSleep(2000, 3000)
 endfunc
 
 func GoToFortRanik ()
@@ -382,9 +396,9 @@ func GoToFortRanik ()
         return
     endif
     
-    TravelTo($FortRanikMapID)
+    RandomTravelTo($FortRanikMapID)
     
-    Sleep(2500)
+    RandomSleep(2000, 3000)
 endfunc
 
 func LeaveAscalon ()
@@ -404,7 +418,7 @@ func LeaveAscalon ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
@@ -426,7 +440,7 @@ func LeaveAshfordToLakeSide ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
@@ -448,7 +462,7 @@ func LeaveAshfordToCatacombs ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
@@ -470,7 +484,7 @@ func LeaveFoiblesFair ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
@@ -492,7 +506,7 @@ func LeaveBarradin ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
@@ -515,13 +529,27 @@ func LeaveFortRanik ()
         endif
     wend
     
-    Sleep(5000)
+    RandomSleep(2500, 7500)
     
     return true
 endfunc
 
+func RandomTravelTo ($mapid)
+    $RandomRL = Random(0, 10, 1)
+    
+    MoveMap($mapid, $MapRegionIDList[$RandomRL], 0, $MapLanguageIDList[$RandomRL])
+    
+    WaitMapLoading($mapid, 30000)
+endfunc
+
+func RandomSleep ($min, $max)
+    $Random = Random($min, $max, 1)
+    
+    Sleep($Random)
+endfunc
+
 func UseSummoningStone ()
-    M93_UseItemByBagSlotID($SummoningStoneModelID)
+    M93_UseItemByModelID($SummoningStoneModelID)
 endfunc
 
 func MoveAndLoot ($x, $y)
@@ -531,7 +559,7 @@ func MoveAndLoot ($x, $y)
     
     MoveTo($x, $y)
     
-    Sleep(500)
+    RandomSleep(350, 650)
     
     $WaitTimeout = TimerInit()
     
@@ -547,10 +575,14 @@ func MoveAndLoot ($x, $y)
                 Move($x, $y)
             endif
             
-            Sleep(250)
+            RandomSleep(200, 300)
         wend
         
-        if TimerDiff($WaitTimeout) > 120000 then
+        $NearestEnemy = GetNearestEnemyToAgent()
+        
+        if TimerDiff($WaitTimeout) > 80000 then
+            GoPlayer($NearestEnemy)
+        elseif TimerDiff($WaitTimeout) > 120000 then
             exitloop
         endif
         
@@ -581,7 +613,7 @@ func MoveAndLoot ($x, $y)
         $Looted = true
         
         while GetAgentExists($Agent)
-            Sleep(1000)
+            RandomSleep(750, 1250)
             if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
                 return false
             endif
@@ -593,7 +625,7 @@ func MoveAndLoot ($x, $y)
     endif
     
     while M93_GetHealthPercentage() < 80 and not GetIsDead()
-        Sleep(500)
+        RandomSleep(250, 750)
     wend
     
     if $Looted then
@@ -683,7 +715,7 @@ func FarmingRedIris ()
         $PickupTimeoutTimer = TimerInit()
         
         while GetAgentExists($NearestAgent)
-            Sleep(500)
+            RandomSleep(250, 750)
             
             if TimerDiff($PickupTimeoutTimer) > 30000 then
                 exitloop
@@ -878,18 +910,15 @@ func FarmingSpiderLegs ()
     MoveAndLoot(17176, -11293)
     MoveAndLoot(17937, -11768)
     MoveAndLoot(18755, -12221)
-    ; MoveAndLoot(19389, -12163)
-    ; MoveAndLoot(20002, -11911)
-    ; MoveAndLoot(20341, -11541)
-    ; MoveAndLoot(20834, -11217)
-    ; MoveAndLoot(21379, -11264)
-    ; MoveAndLoot(21982, -11727)
-    ; MoveAndLoot(21801, -12373)
-    ; MoveAndLoot(21329, -12793)
-    ; MoveAndLoot(20676, -12643)
-    
     MoveAndLoot(19471, -12292)
     MoveAndLoot(20165, -12409)
+    
+    MoveAndLoot(20619, -12897)
+    MoveAndLoot(21087, -13002)
+    MoveAndLoot(21440, -12692)
+    MoveAndLoot(22044, -12417)
+    MoveAndLoot(21763, -11795)
+    MoveAndLoot(21374, -11463)
     
     GUI_ConsoleAppend("Return to Fort Ranik...")
 endfunc
