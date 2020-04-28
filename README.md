@@ -1,5 +1,5 @@
 # What is it
-Guild Wars Sandford Farmer is GWA2 based BOT writed in AutoIT. it's used to farm items needed by Nicholas Sandford. 
+Guild Wars Sandford Farmer is GWA2 based BOT writed in AutoIT. it's used to farm items needed by Nicholas Sandford in pre-searing.
 
 # Requirements
 - AutoIT installed on your computer
