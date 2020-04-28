@@ -15,4 +15,4 @@ Guild Wars Sandford Farmer is GWA2 based BOT writed in AutoIT. it's used to farm
 7. Enjoy!
 
 # Known issues in initial release
-- Teleport to town need to random change region (to avoid reporting)
+- Teleport to town need to random change region (to avoid reporting) [Done in v0.06]
