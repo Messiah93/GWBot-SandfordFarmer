@@ -11,10 +11,12 @@
 #include <ScrollBarsConstants.au3>
 #include <Array.au3>
 #include "lib/GWA2.au3"
-#include "lib/GWC_M93_API.au3"
 
 
-global $BOTVersion = "v0.06"
+Local $M93_RENDERINGENABLED = true
+
+
+global $BOTVersion = "v0.20210216"
 
 global $AscalonMapID = 148
 global $AshfordMapID = 164
@@ -1118,6 +1120,97 @@ func FarmingDullCarapaces ()
     MoveAndLoot(2743, -12963)
     
     GUI_ConsoleAppend("Return to Ascalon...")
+endfunc
+
+
+Func M93_GetNumberOfFoesInRangeOfAgent ($aAgent = -2, $aRange = 1250)
+	Local $lAgent, $lDistance
+	Local $lCount = 0
+
+	If Not IsDllStruct($aAgent) Then $aAgent = GetAgentByID($aAgent)
+
+	For $i = 1 To GetMaxAgents()
+		$lAgent = GetAgentByID($i)
+		; If BitAND(DllStructGetData($lAgent, 'typemap'), 262144) Then ContinueLoop
+		If DllStructGetData($lAgent, 'Type') <> 0xDB Then ContinueLoop
+		If DllStructGetData($lAgent, 'Allegiance') <> 3 Then ContinueLoop
+
+		If DllStructGetData($lAgent, 'HP') <= 0 Then ContinueLoop
+		If BitAND(DllStructGetData($lAgent, 'Effects'), 0x0010) > 0 Then ContinueLoop
+		$lDistance = GetDistance($lAgent)
+
+		If $lDistance > $aRange Then ContinueLoop
+		$lCount += 1
+	Next
+	Return $lCount
+ EndFunc
+
+func M93_GetHealthPercentage ($Agent = -2)
+    $AgentMaxHealth = M93_GetMaxHealth($Agent)
+    $AgentHealth = GetHealth($Agent)
+    
+    return Floor(($AgentHealth / $AgentMaxHealth) * 100)
+endfunc
+
+Func M93_ToggleRendering()
+	If $M93_RENDERINGENABLED Then
+		M93_DisableRendering()
+		M93_ClearMemory()
+	Else
+        M93_EnableRendering()
+	EndIf
+EndFunc
+
+Func M93_EnableRendering ()
+	MemoryWrite($mDisableRendering, 0)
+    WinSetState(GetWindowHandle(), "", @SW_SHOW)
+    
+    $M93_RENDERINGENABLED = true
+EndFunc
+
+Func M93_DisableRendering ()
+	MemoryWrite($mDisableRendering, 1)
+    WinSetState(GetWindowHandle(), "", @SW_HIDE)
+    
+    $M93_RENDERINGENABLED = false
+EndFunc
+
+Func M93_ClearMemory ()
+	DllCall($mKernelHandle, 'int', 'SetProcessWorkingSetSize', 'int', $mGWProcHandle, 'int', -1, 'int', -1)
+EndFunc
+
+Func M93_UseItemByModelID ($ModelID)
+    for $BagID = 1 to 4
+        $BagHandle = GetBag($BagID)
+        for $BagSlot = 1 to DllStructGetData($BagHandle, "Slots")
+            $BagItem = GetItemBySlot($BagHandle, $BagSlot)
+            if DllStructGetData($BagItem, "ModelID") == $ModelID then
+                UseItem($BagItem)
+                return
+            else
+                continueLoop
+            endif
+        next
+    next
+endfunc
+
+Func M93_GetInventoryItemByModelID ($ModelID)
+    local $InventoryItem = null
+    
+    for $BagID = 1 to 4
+        $BagHandle = GetBag($BagID)
+        for $BagSlot = 1 to DllStructGetData($BagHandle, "Slots")
+            $BagItem = GetItemBySlot($BagHandle, $BagSlot)
+            if DllStructGetData($BagItem, "ModelID") == $ModelID then
+                $InventoryItem = $BagItem
+                exitloop
+            else
+                continueLoop
+            endif
+        next
+    next
+    
+    return $InventoryItem
 endfunc
 
 Main()
