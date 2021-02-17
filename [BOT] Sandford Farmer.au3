@@ -555,7 +555,7 @@ func UseSummoningStone ()
 endfunc
 
 func MoveAndLoot ($x, $y)
-    if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
+    if GetIsDead(-2) or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
         return false
     endif
     
@@ -588,7 +588,7 @@ func MoveAndLoot ($x, $y)
             exitloop
         endif
         
-        if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
+        if GetIsDead(-2) or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
             return false
         endif
     wend
@@ -602,7 +602,7 @@ func MoveAndLoot ($x, $y)
         
 		if DllStructGetData($AgentID, 'Type') <> 0x400 then continueloop
         
-        if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
+        if GetIsDead(-2) or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
             return false
         endif
         
@@ -616,17 +616,17 @@ func MoveAndLoot ($x, $y)
         
         while GetAgentExists($Agent)
             RandomSleep(750, 1250)
-            if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
+            if GetIsDead(-2) or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
                 return false
             endif
         wend
     next
     
-    if GetIsDead() or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
+    if GetIsDead(-2) or TimerDiff($CurrentFarmTimer) > $FarmTimeoutReference then
         return false
     endif
     
-    while M93_GetHealthPercentage() < 80 and not GetIsDead()
+    while M93_GetHealthPercentage() < 80 and not GetIsDead(-2)
         RandomSleep(250, 750)
     wend
     
@@ -1211,6 +1211,14 @@ Func M93_GetInventoryItemByModelID ($ModelID)
     next
     
     return $InventoryItem
+endfunc
+
+func M93_GetMaxHealth ($Agent = -2)
+    if IsDllStruct($Agent) = 0 then
+        $Agent = GetAgentByID($Agent)
+    endif
+    
+    return DllStructGetData($Agent, 'MaxHP')
 endfunc
 
 Main()
