@@ -690,49 +690,42 @@ func FarmingRedIris ()
     
     GUI_ConsoleAppend("We are seeking an Red Iris Flower...")
     
-    $TimeoutTimer = TimerInit()
+    local $TimeoutTimer = TimerInit()
     
     while true
-        if TimerDiff($TimeoutTimer) > 30000 then
+        if TimerDiff($TimeoutTimer) > 45000 then
             GUI_ConsoleAppend("No Red Iris Flower found...")
             
             exitloop
         endif
         
-        if GetMaxAgents() <= 0 then
-            continueloop
-        endif
+        local $NearestRedIris = SeekRedIris()
         
-        $NearestAgent = DllStructGetData(GetNearestItemToAgent(-2), "ID")
-        $NearestAgentModelID = DllStructGetData(GetItemByAgentID($NearestAgent), "ModelID")
-        
-        if $NearestAgentModelID <> $RedIrisID then
-            continueloop
-        endif
-        
-        GUI_ConsoleAppend("Red Iris Found... Pickup it...")
-        
-        PickUpItem($NearestAgent)
-        
-        $PickupTimeoutTimer = TimerInit()
-        
-        while GetAgentExists($NearestAgent)
-            RandomSleep(250, 750)
+        if $NearestRedIris <> null then
+            GUI_ConsoleAppend("Red Iris Found... Pickup it...")
             
-            if TimerDiff($PickupTimeoutTimer) > 30000 then
-                exitloop
+            PickUpItem($NearestRedIris)
+            
+            local $PickupTimeoutTimer = TimerInit()
+            
+            while GetAgentExists($NearestRedIris)
+                RandomSleep(250, 750)
+                
+                if TimerDiff($PickupTimeoutTimer) > 30000 then
+                    GUI_ConsoleAppend("Red Iris Flower lost???")
+                    
+                    exitloop
+                endif
+            wend
+            
+            if not GetAgentExists($NearestRedIris) then
+                GUI_ConsoleAppend("Red Iris Flower picked up!")
             endif
-        wend
-        
-        if GetAgentExists($NearestAgent) then
-            GUI_ConsoleAppend("Red Iris Flower lost???")
-        else
-            GUI_ConsoleAppend("Red Iris Flower picked up!")
+            
+            exitloop
         endif
         
-        GUI_ConsoleAppend("Return to Ashford...")
-        
-        exitloop
+        RandomSleep(1000, 2000)
     wend
 endfunc
 
@@ -1122,6 +1115,25 @@ func FarmingDullCarapaces ()
     GUI_ConsoleAppend("Return to Ascalon...")
 endfunc
 
+func SeekRedIris ()
+    local $AgentList = GetMaxAgents()
+    
+    for $Agent = 1 to $AgentList
+        local $AgentID = GetAgentByID($Agent)
+        local $ItemAgentID = GetItemByAgentID($Agent)
+        local $ItemAgentModelID = DllStructGetData($ItemAgentID, "ModelID")
+        
+        if DllStructGetData($AgentID, "Type") <> 0x400 then
+            continueloop
+        endif
+        
+        if $ItemAgentModelID == $RedIrisID then
+            return $Agent
+        endif
+    next
+    
+    return null
+endfunc
 
 Func M93_GetNumberOfFoesInRangeOfAgent ($aAgent = -2, $aRange = 1250)
 	Local $lAgent, $lDistance
