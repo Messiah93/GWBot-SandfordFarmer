@@ -1,5 +1,6 @@
 #include-once
 #RequireAdmin
+#include "GWA2_Headers.au3"
 
 If @AutoItX64 Then
 	MsgBox(16, "Error!", "Please run all bots in 32-bit (x86) mode.")
@@ -7,181 +8,7 @@ If @AutoItX64 Then
 EndIf
 
 #Region Headers
-Global Const $HEADER_QUEST_ACCEPT = 0x50	;Accepts a quest from the NPC
-Global Const $HEADER_QUEST_REWARD = 0x50	;Retrieves Quest reward from NPC
-;GAME_CMSG_QUEST_ABANDON 0x10 or GAME_SMSG_QUEST_REMOVE 0x52
-Global Const $HEADER_QUEST_ABANDON = 0x10 ;Abandons the quest
 
-;=HERO=
-;GAME_CMSG_HERO_BEHAVIOR
-Global Const $HEADER_HERO_AGGRESSION = 0x14	;Sets the heroes aggression level
-;GAME_CMSG_HERO_LOCK_TARGET
-Global Const $HEADER_HERO_LOCK = 0x15	;Locks the heroes target
-;GAME_CMSG_HERO_SKILL_TOGGLE
-Global Const $HEADER_HERO_TOGGLE_SKILL = 0x18	;Enables or disables the heroes skill
-;GAME_CMSG_HERO_FLAG_SINGLE
-Global Const $HEADER_HERO_PLACE_FLAG = 0x19	;Sets the heroes position flag, hero runs to position
-Global Const $HEADER_HERO_CLEAR_FLAG = 0x19	;Clears the heroes position flag
-;GAME_CMSG_HERO_ADD 0x1D or GAME_SMSG_PARTY_HERO_ADD 0x1C8
-Global Const $HEADER_HERO_ADD = 0x1D	;Adds hero to party
-;GAME_CMSG_HERO_KICK 0x1E or GAME_SMSG_PARTY_HERO_REMOVE 0x1C9
-Global Const $HEADER_HERO_KICK = 0x1E	;Kicks hero from party
-Global Const $HEADER_HEROES_KICK = 0x1E	;Kicks ALL heroes from party
-
-;=PARTY=
-;GAME_CMSG_HERO_FLAG_ALL
-Global Const $HEADER_PARTY_PLACE_FLAG = 0x1A	;Sets the party position flag, all party-npcs runs to position
-Global Const $HEADER_PARTY_CLEAR_FLAG = 0x1A	;Clears the party position flag
-;GAME_CMSG_PARTY_INVITE_NPC 0x9E or GAME_SMSG_PARTY_HENCHMAN_ADD 0x1C5
-Global Const $HEADER_HENCHMAN_ADD = 0x9E	;Adds henchman to party
-;GAME_CMSG_PARTY_LEAVE_GROUP
-Global Const $HEADER_PARTY_LEAVE = 0xA1	;Leaves the party
-;GAME_CMSG_PARTY_KICK_NPC 0xA7 or GAME_SMSG_PARTY_HENCHMAN_REMOVE 0x1C6
-Global Const $HEADER_HENCHMAN_KICK = 0xA7	;Kicks a henchman from party
-;GAME_CMSG_PARTY_INVITE_PLAYER 0x9F or GAME_SMSG_PARTY_INVITE_ADD 0x01CA
-Global Const $HEADER_INVITE_TARGET = 0x9F	;Invite target player to party
-;GAME_CMSG_PARTY_ACCEPT_CANCEL 0x9C or GAME_SMSG_PARTY_INVITE_CANCEL 0x01CC
-Global Const $HEADER_INVITE_CANCEL = 0x9C	;Cancel invitation of player
-;GAME_CMSG_PARTY_ACCEPT_INVITE 0x9B or GAME_SMSG_PARTY_JOIN_REQUEST 0x01CB
-Global Const $HEADER_INVITE_ACCEPT = 0x9B	;Accept invitation to party
-
-;=TARGET (Enemies or NPC)=
-;GAME_CMSG_TARGET_CALL 0x22
-Global Const $HEADER_CALL_TARGET = 0x22	;Calls the target without attacking (Ctrl+Shift+Space)
-;GAME_CMSG_ATTACK_AGENT 0x25
-Global Const $HEADER_ATTACK_AGENT = 0x25	;Attacks agent (Space IIRC)
-;GAME_CMSG_CANCEL_MOVEMENT 0x27 or GAME_SMSG_SKILL_CANCEL 0xE4
-Global Const $HEADER_CANCEL_ACTION = 0x27	;Cancels the current action
-;GAME_CMSG_INTERACT_PLAYER 0x32
-Global Const $HEADER_AGENT_FOLLOW = 0x32	;Follows the agent/npc. Ctrl+Click triggers "I am following Person" in chat
-;GAME_CMSG_INTERACT_LIVING
-Global Const $HEADER_NPC_TALK = 0x38	;talks/goes to npc
-;GAME_CMSG_INTERACT_ITEM 0x3E or GAME_CMSG_INTERACT_GADGET 0x50
-Global Const $HEADER_SIGNPOST_RUN = 0x50	;Runs to signpost
-
-;=DROP=
-;GAME_CMSG_DROP_ITEM 0x2B
-Global Const $HEADER_ITEM_DROP = 0x2B	;Drops item from inventory to ground
-;GAME_CMSG_DROP_GOLD
-Global Const $HEADER_GOLD_DROP = 0x2E	;Drops gold from inventory to ground
-
-;=BUFFS=
-;GAME_CMSG_DROP_BUFF
-Global Const $HEADER_STOP_MAINTAIN_ENCH = 0x28	;Drops buff, cancel enchantmant, whatever you call it
-
-;=ITEMS=
-;GAME_CMSG_EQUIP_ITEM
-Global Const $HEADER_ITEM_EQUIP = 0x2F	;Equips item from inventory/chest/no idea
-;GAME_CMSG_INTERACT_ITEM
-Global Const $HEADER_ITEM_PICKUP = 0x3E	;Picks up an item from ground
-;GAME_CMSG_ITEM_DESTROY
-Global Const $HEADER_ITEM_DESTROY = 0x68	;Destroys the item
-;GAME_CMSG_ITEM_IDENTIFY
-Global Const $HEADER_ITEM_ID = 0x6B	;Identifies item in inventory
-;GAME_CMSG_ITEM_MOVE
-Global Const $HEADER_ITEM_MOVE = 0x71	;Moves item in inventory
-;GAME_CMSG_ITEM_ACCEPT_ALL
-Global Const $HEADER_ITEMS_ACCEPT_UNCLAIMED = 0x72	;Accepts ITEMS not picked up in missions
-;GAME_CMSG_ITEM_MOVE
-Global Const $HEADER_ITEM_MOVE_EX = 0x74	;Moves an item, with amount to be moved.
-;GAME_CMSG_ITEM_SALVAGE_MATERIALS
-Global Const $HEADER_SALVAGE_MATS = 0x79	;Salvages materials from item
-;GAME_CMSG_ITEM_SALVAGE_UPGRADE
-Global Const $HEADER_SALVAGE_MODS = 0x7A	;Salvages mods from item
-;GAME_CMSG_ITEM_USE
-Global Const $HEADER_ITEM_USE = 0x7D	;Uses item from inventory/chest
-;GAME_CMSG_UNEQUIP_ITEM
-Global Const $HEADER_ITEM_UNEQUIP = 0x4E	;Unequip item
-Global Const $HEADER_UPGRADE = 0x87	;used by gwapi. is it even useful? NOT TESTED
-Global Const $HEADER_UPGRADE_ARMOR_1 = 0x84	;used by gwapi. is it even useful? NOT TESTED
-Global Const $HEADER_UPGRADE_ARMOR_2 = 0x87	;used by gwapi. is it even useful? NOT TESTED
-Global Const $HEADER_EQUIP_BAG = 0x71
-;Global Const $HEADER_USE_ITEM = 0x85
-
-;=TRADE=
-;GAME_SMSG_TRADE_REQUEST
-Global Const $HEADER_TRADE_PLAYER = 0x00	;Send trade request to player
-;GAME_SMSG_TRADE_ADD_ITEM
-Global Const $HEADER_TRADE_OFFER_ITEM = 0x04	;Add item to trade window
-;GAME_CMSG_TRADE_SEND_OFFER
-Global Const $HEADER_TRADE_SUBMIT_OFFER = 0x03	;Submit offer
-;GAME_SMSG_TRADE_CHANGE_OFFER
-Global Const $HEADER_TRADE_CHANGE_OFFER = 0x02	;Change offer
-;GAME_CMSG_TRADE_CANCEL
-Global Const $HEADER_TRADE_CANCEL = 0x01	;Cancel trade
-;GAME_CMSG_TRADE_ACCEPT
-Global Const $HEADER_TRADE_ACCEPT = 0x07	;Accept trade
-
-;=TRAVEL=
-;GAME_CMSG_PARTY_TRAVEL
-Global Const $HEADER_MAP_TRAVEL = 0xB0	;Travels to outpost via worldmap
-;GAME_CMSG_PARTY_ENTER_GUILD_HALL
-Global Const $HEADER_GUILDHALL_TRAVEL = 0xAF	;Travels to guild hall
-;GAME_CMSG_PARTY_LEAVE_GUILD_HALL
-Global Const $HEADER_GUILDHALL_LEAVE = 0xB1	;Leaves Guildhall
-
-;=FACTION=
-;GAME_CMSG_DEPOSIT_FACTION
-Global Const $HEADER_FACTION_DONATE = 0x34	;Donates kurzick/luxon faction to ally
-
-;=TITLE=
-;GAME_CMSG_TITLE_DISPLAY 0x57 or GAME_SMSG_TITLE_RANK_DISPLAY 0xF5
-Global Const $HEADER_TITLE_DISPLAY = 0x57	;Displays title
-;GAME_CMSG_TITLE_HIDE
-Global Const $HEADER_TITLE_CLEAR = 0x58	;Hides title
-
-;=DIALOG=
-;GAME_CMSG_SEND_DIALOG
-Global Const $HEADER_DIALOG = 0x3A	;Sends a dialog to NPC
-;GAME_CMSG_SKIP_CINEMATIC
-Global Const $HEADER_CINEMATIC_SKIP = 0x62	;Skips the cinematic
-Global Const $HEADER_HOM_DIALOG = 0x59
-
-;=SKILL / BUILD=
-;GAME_CMSG_SKILLBAR_SKILL_SET
-Global Const $HEADER_SET_SKILLBAR_SKILL = 0x5B	;Changes a skill on the skillbar
-;GAME_CMSG_SKILLBAR_LOAD
-Global Const $HEADER_LOAD_SKILLBAR = 0x5C	;Loads a complete build
-;GAME_CMSG_CHANGE_SECOND_PROFESSION
-Global Const $HEADER_CHANGE_SECONDARY = 0x40	;Changes Secondary class (from Build window, not class changer)
-Global Const $HEADER_SKILL_USE_ALLY = 0x4C	;used by gwapi. appears to have changed
-Global Const $HEADER_SKILL_USE_FOE = 0x4C	;used by gwapi. appears to have changed
-Global Const $HEADER_SKILL_USE_ID = 0x4C	;
-Global Const $HEADER_SET_ATTRIBUTES = 0x10	;hidden in init stuff like sendchat
-Global Const $HEADER_OPEN_SKILLS = 0x41
-;GAME_CMSG_USE_SKILL
-Global Const $HEADER_USE_SKILL = 0x45
-Global Const $HEADER_PROFESSION_ULOCK = 0x41
-
-;=CHEST=
-;GAME_CMSG_OPEN_CHEST
-Global Const $HEADER_CHEST_OPEN = 0x52	;Opens a chest (with key AFAIK)
-;GAME_CMSG_ITEM_CHANGE_GOLD
-Global Const $HEADER_CHANGE_GOLD = 0x7B	;Moves Gold (from chest to inventory, and otherway around IIRC)
-
-;=MISSION=
-;GAME_CMSG_PARTY_SET_DIFFICULTY
-Global Const $HEADER_MODE_SWITCH = 0x9A	;Toggles hard- and normal mode
-;GAME_CMSG_PARTY_ENTER_CHALLENGE
-Global Const $HEADER_MISSION_ENTER = 0xA4	;Enter a mission/challenge
-Global Const $HEADER_MISSION_FOREIGN_ENTER = 0xAC	;Enters a foreign mission/challenge (no idea honestly)
-;GAME_CMSG_PARTY_RETURN_TO_OUTPOST
-Global Const $HEADER_OUTPOST_RETURN = 0xA6	;Returns to outpost after /resign
-
-;=CHAT=
-;GAME_CMSG_SEND_CHAT_MESSAGE
-Global Const $HEADER_SEND_CHAT = 0x63	;Needed for sending messages in chat
-
-;=MOVEMENT=
-;GAME_SMSG_AGENT_MOVEMENT_TICK
-Global Const $HEADER_MOVEMENT_TICK = 0x1F
-
-;=OTHER CONSTANTS=
-Global Const $HEADER_MAX_ATTRIBUTES_CONST_5 = 0x04	;constant at word 5 of max attrib packet. Changed from 3 to four in most recent update
-Global Const $HEADER_MAX_ATTRIBUTES_CONST_22	= 0x04	;constant at word 22 of max attrib packet. Changed from 3 to four in most recent update
-Global Const $HEADER_OPEN_GB_WINDOW = 0x9F
-Global Const $HEADER_CLOSE_GB_WINDOW = 0xA0
-Global Const $HEADER_START_RATING_GVG = 0xA9
 #EndRegion Headers
 
 #Region Declarations
@@ -192,8 +19,9 @@ Local $mLabels[1][2]
 Local $mBase = 0x00C50000
 Local $mASMString, $mASMSize, $mASMCodeOffset
 Local $SecondInject
+Local $RenderingEnabled
 
-Local $mGUI = GUICreate('GWA²'), $mSkillActivate, $mSkillCancel, $mSkillComplete, $mChatReceive, $mLoadFinished
+Local $mGUI = GUICreate('GWA�'), $mSkillActivate, $mSkillCancel, $mSkillComplete, $mChatReceive, $mLoadFinished
 Local $mSkillLogStruct = DllStructCreate('dword;dword;dword;float')
 Local $mSkillLogStructPtr = DllStructGetPtr($mSkillLogStruct)
 Local $mChatLogStruct = DllStructCreate('dword;wchar[256]')
@@ -415,7 +243,7 @@ Func GetHwnd($aProc)
 	Next
 EndFunc   ;==>GetHwnd
 
-;~ Description: Injects GWA² into the game client.
+;~ Description: Injects GWA� into the game client.
 Func Initialize($aGW, $bChangeTitle = True, $aUseStringLog = False, $aUseEventSystem = True)
 	Local $lWinList, $lWinList2, $mGWProcessId
 	$mUseStringLog = $aUseStringLog
@@ -447,10 +275,7 @@ Func Initialize($aGW, $bChangeTitle = True, $aUseStringLog = False, $aUseEventSy
 	Local $lTemp
 	$mBasePointer = MemoryRead(GetScannedAddress('ScanBasePointer', 8)) ;-3
 	SetValue('BasePointer', '0x' & Hex($mBasePointer, 8))
-	$mAgentBase = GetScannedAddress('ScanAgentBase', -15) + 0x1E
-	$mAgentBase = $mAgentBase + MemoryRead($mAgentBase) + 4
-	$mAgentBase += 0x13
-	$mAgentBase = MemoryRead($mAgentBase)
+	$mAgentBase = MemoryRead(GetScannedAddress('ScanAgentBasePointer', 8) + 0xD) - 8
 	SetValue('AgentBase', '0x' & Hex($mAgentBase, 8))
 	$mMaxAgents = $mAgentBase + 8
 	SetValue('MaxAgents', '0x' & Hex($mMaxAgents, 8))
@@ -519,13 +344,13 @@ Func Initialize($aGW, $bChangeTitle = True, $aUseStringLog = False, $aUseEventSy
 	SetValue("DecreaseAttributeFunction", "0x" & Hex(GetScannedAddress("ScanDecreaseAttributeFunction", 25), 8))
 	SetValue('MoveFunction', '0x' & Hex(GetScannedAddress('ScanMoveFunction', 1), 8))
 	SetValue('UseSkillFunction', '0x' & Hex(GetScannedAddress('ScanUseSkillFunction', -0x125), 8))
-	SetValue('ChangeTargetFunction', '0x' & Hex(GetScannedAddress('ScanChangeTargetFunction', -15), 8))
+	SetValue('ChangeTargetFunction', '0x' & Hex(GetScannedAddress('ScanChangeTargetFunction', -0x0089)+1, 8))
 	SetValue('WriteChatFunction', '0x' & Hex(GetScannedAddress('ScanWriteChatFunction', -0x3D), 8))
 	SetValue('SellItemFunction', '0x' & Hex(GetScannedAddress('ScanSellItemFunction', -85), 8))
 	SetValue('PacketSendFunction', '0x' & Hex(GetScannedAddress('ScanPacketSendFunction', -0xC2), 8))
 	SetValue('ActionBase', '0x' & Hex(MemoryRead(GetScannedAddress('ScanActionBase', -3)), 8))
 	SetValue('ActionFunction', '0x' & Hex(GetScannedAddress('ScanActionFunction', -3), 8))
-	SetValue('UseHeroSkillFunction', '0x' & Hex(GetScannedAddress('ScanUseHeroSkillFunction', -0xA1), 8))
+	SetValue('UseHeroSkillFunction', '0x' & Hex(GetScannedAddress('ScanUseHeroSkillFunction', -0x59), 8))
 	SetValue('BuyItemBase', '0x' & Hex(MemoryRead(GetScannedAddress('ScanBuyItemBase', 15)), 8))
 	SetValue('TransactionFunction', '0x' & Hex(GetScannedAddress('ScanTransactionFunction', -0x7E), 8))
 	SetValue('RequestQuoteFunction', '0x' & Hex(GetScannedAddress('ScanRequestQuoteFunction', -0x34), 8)) ;-2
@@ -616,10 +441,12 @@ Func Scan()
 	_('MainModPtr/4')
 	_('ScanBasePointer:')
 	AddPattern('506A0F6A00FF35') ;85C0750F8BCE
-	_('ScanAgentBase:')
-	AddPattern('538B5D0C568B750885') ;568BF13BF07204
+	_('ScanAgentBasePointer:')
+	AddPattern('FF50104783C6043BFB75E1')
 	_('ScanCurrentTarget:')
 	AddPattern('83C4085B8BE55DC355')
+	_('ScanAgentBasePointer:')
+	AddPattern('FF50104783C6043BFB75E1')
 	_('ScanMyID:')
 	AddPattern('83EC08568BF13B15')
 	_('ScanEngine:')
@@ -633,7 +460,7 @@ Func Scan()
 	_('ScanTargetLog:')
 	AddPattern('5356578BFA894DF4E8')
 	_('ScanChangeTargetFunction:')
-	AddPattern('538B5D0C568B750885') ;33C03BDA0F95C033
+	AddPattern('3BDF0F95') ;33C03BDA0F95C033
 	_('ScanMoveFunction:')
 	AddPattern('558BEC83EC208D45F0') ;558BEC83EC2056578BF98D4DF0
 	_('ScanPing:')
@@ -677,7 +504,7 @@ Func Scan()
 	_('ScanSkillBase:')
 	AddPattern('8D04B6C1E00505')
 	_('ScanUseHeroSkillFunction:')
-	AddPattern('8D0C765F5E8B')
+    AddPattern('BA02000000B954080000')
 	_('ScanTransactionFunction:')
 	AddPattern('85FF741D8B4D14EB08') ;558BEC81ECC000000053568B75085783FE108BFA8BD97614
 	_('ScanBuyItemBase:')
@@ -691,7 +518,7 @@ Func Scan()
 	_('ScanSleep:')
 	AddPattern('5F5E5B741A6860EA0000')
 	_('ScanSalvageFunction:')
-	AddPattern('33C58945FC8B45088945F08B450C8945F48B45108945F88D45EC506A10C745EC76')
+	AddPattern('8BFA8BD9897DF0895DF4')
 	_('ScanSalvageGlobal:')
 	AddPattern('8B018B4904A3')
 	_('ScanIncreaseAttributeFunction:')
@@ -884,9 +711,6 @@ EndFunc   ;==>ScanForCharname
 #EndRegion Initialisation
 
 #Region Commands
-Func GetIsExplorableArea()
-	Return GetMapLoading() == 1
-EndFunc ;GetIsExplorableArea
 #Region Item
 ;~ Description: Starts a salvaging session of an item.
 Func StartSalvage($aItem)
@@ -1344,7 +1168,7 @@ EndFunc   ;==>WithdrawGold
 ;~ Description: Internal use for moving gold.
 Func ChangeGold($aCharacter, $aStorage)
 	Return SendPacket(0xC, $HEADER_CHANGE_GOLD, $aCharacter, $aStorage) ;0x75
-EndFunc   ;==>ChangeGold
+ EndFunc   ;==>ChangeGold
 #EndRegion Item
 
 #Region H&H
@@ -1491,7 +1315,7 @@ Func GoPlayer($aAgent)
 		$lAgentID = DllStructGetData($aAgent, 'ID')
 	EndIf
 
-	Return SendPacket(0x8, $HEADER_GO_PLAYER, $lAgentID)
+	Return SendPacket(0x8, $HEADER_AGENT_FOLLOW , $lAgentID)
 EndFunc   ;==>GoPlayer
 
 ;~ Description: Talk to an NPC
@@ -1936,6 +1760,18 @@ Func DisableRendering()
 	MemoryWrite($mDisableRendering, 1)
 EndFunc   ;==>DisableRendering
 
+Func ToggleRendering()
+	$RenderingEnabled = Not $RenderingEnabled
+	If $RenderingEnabled Then
+		EnableRendering()
+		WinSetState(GetWindowHandle(), "", @SW_SHOW)
+	Else
+		DisableRendering()
+		WinSetState(GetWindowHandle(), "", @SW_HIDE)
+		ClearMemory()
+	EndIf
+EndFunc   ;==>ToggleRendering
+
 ;~ Description: Display all names.
 Func DisplayAll($aDisplay)
 	DisplayAllies($aDisplay)
@@ -1963,7 +1799,7 @@ EndFunc   ;==>DisplayEnemies
 
 #Region Chat
 ;~ Description: Write a message in chat (can only be seen by botter).
-Func WriteChat($aMessage, $aSender = 'GWA²')
+Func WriteChat($aMessage, $aSender = 'GWA�')
 	Local $lMessage, $lSender
 	Local $lAddress = 256 * $mQueueCounter + $mQueueBase
 
@@ -2034,7 +1870,7 @@ EndFunc   ;==>SendChat
 #Region Misc
 ;~ Description: Change weapon sets.
 Func ChangeWeaponSet($aSet)
-	Return PerformAction(0x80 + $aSet, 0x1E)
+	Return PerformAction(0x80 + $aSet, 0x1E) ;Return PerformAction(0x80 + $aSet, 0x1E) 0x14A
 EndFunc   ;==>ChangeWeaponSet
 
 ;~ Description: Use a skill.
@@ -2053,9 +1889,23 @@ Func UseSkill($aSkillSlot, $aTarget, $aCallTarget = False)
 	Enqueue($mUseSkillPtr, 16)
 EndFunc   ;==>UseSkill
 
+Func UseSkillEx2($lSkill, $lTgt = -2, $aTimeout = 3000)
+	If GetIsDead(-2) Then Return
+	If Not IsRecharged($lSkill) Then Return
+	Local $Skill = GetSkillByID(GetSkillbarSkillID($lSkill, 0))
+	Local $Energy = StringReplace(StringReplace(StringReplace(StringMid(DllStructGetData($Skill, 'Unknown4'), 6, 1), 'C', '25'), 'B', '15'), 'A', '10')
+	If GetEnergy(-2) < $Energy Then Return
+	Local $lAftercast = DllStructGetData($Skill, 'Aftercast')
+	Local $lDeadlock = TimerInit()
+	UseSkill($lSkill, $lTgt)
+	Do
+		Sleep(50)
+		If GetIsDead(-2) = 1 Then Return
+	Until (Not IsRecharged($lSkill)) Or (TimerDiff($lDeadlock) > $aTimeout)
+	Sleep($lAftercast * 1000)
+EndFunc   ;==>UseSkillEx
 
-
-Func IsRecharged($lSkill)
+Func IsRecharged2($lSkill)
 	Return GetSkillbarSkillRecharge($lSkill) == 0
 EndFunc   ;==>IsRecharged
 
@@ -3560,8 +3410,6 @@ Func GetBuffCount($aHeroNumber = 0)
 	Return 0
 EndFunc   ;==>GetBuffCount
 
-
-
 ;~ Description: Tests if you are currently maintaining buff on target.
 Func GetIsTargetBuffed($aSkillID, $aAgentID, $aHeroNumber = 0)
 	Local $lBuffStruct = DllStructCreate('long SkillId;byte unknown1[4];long BuffId;long TargetId')
@@ -4998,7 +4846,7 @@ Func CreateCommands()
 
 	_('CommandAction:')
 	_('mov ecx,dword[ActionBase]')
-	_('mov ecx,dword[ecx+Ñ]')
+	_('mov ecx,dword[ecx+�]')
 	_('add ecx,A0')
 	_('push 0')
 	_('add eax,4')
@@ -5026,13 +4874,16 @@ Func CreateCommands()
 ;~ 	_('pop ecx')
 ;~ 	_('ljmp CommandReturn')
 
-;~ 	_('CommandUseHeroSkill:')
-;~ 	_('mov ecx,dword[eax+4]')
-;~ 	_('mov edx,dword[eax+c]')
-;~ 	_('mov eax,dword[eax+8]')
-;~ 	_('push eax')
-;~ 	_('call UseHeroSkillFunction')
-;~ 	_('ljmp CommandReturn')
+    _('CommandUseHeroSkill:')
+	_('mov ecx,dword[eax+8]')
+	_('push ecx')
+	_('mov ecx,dword[eax+c]')
+	_('push ecx')
+	_('mov ecx,dword[eax+4]')
+	_('push ecx')
+	_('call UseHeroSkillFunction')
+	_('add esp,C')
+	_('ljmp CommandReturn')
 
 	_('CommandSendChat:')
 	_('lea edx,dword[eax+4]')
@@ -5785,7 +5636,7 @@ Func _($aASM)
 					$lOpCode = '8B4140'
 			    Case 'mov ecx,dword[ecx+4]'
 					$lOpCode = '8B4904'
-			    Case 'mov ecx,dword[ecx+Ñ]'
+			    Case 'mov ecx,dword[ecx+�]'
 					$lOpCode = '8B490C'
 				Case 'mov ecx,dword[ecx+8]'
 					$lOpCode = '8B4908'
@@ -5947,15 +5798,16 @@ Func __ProcessGetName($i_PID)
 	Return SetError(1, 0, '')
 EndFunc   ;==>__ProcessGetName
 
-Func CheckArea($AX, $AY)
-	Local $RET = False
-	Local $PX = DllStructGetData(GetAgentByID(-2), "X")
-	Local $PY = DllStructGetData(GetAgentByID(-2), "Y")
-	If ($PX < $AX + 500) And ($PX > $AX - 500) And ($PY < $AY + 500) And ($PY > $AY - 500) Then
-		$RET = True
+Func CheckArea($aX, $aY)
+	$ret = False
+	$pX = DllStructGetData(GetAgentByID(-2), "X")
+	$pY = DllStructGetData(GetAgentByID(-2), "Y")
+
+	If ($pX < $aX + 500) And ($pX > $aX - 500) And ($pY < $aY + 500) And ($pY > $aY - 500) Then
+		$ret = True
 	EndIf
-	Return $RET
-EndFunc   ;==>CHECKAREA
+	Return $ret
+EndFunc   ;==>CheckArea
 
 Func CountItemInBagsByModelID($ItemModelID)
 	Local Enum $BAG_Backpack = 1, $BAG_BeltPouch, $BAG_Bag1, $BAG_Bag2, $BAG_EquipmentPack, $BAG_UnclaimedItems = 7, $BAG_Storage1, $BAG_Storage2, _
@@ -6199,6 +6051,27 @@ Func GetMaxSlots($aBag)
 	EndIf
 EndFunc   ;==>GetMaxSlots
 
+Func ResignAndReturn()
+	Resign()
+	Local $lTimeout = GetPing() + 10000, $lDeadlock = TimerInit()
+	Do
+		If GetPartyDefeated() Then
+			Sleep(1000)
+			Return ReturnToOutpost()
+		EndIf
+		Sleep(250)
+	Until TimerDiff($lDeadlock) > $lTimeout
+ EndFunc ;ResignAndReturn
+
+ Func GetPartyDefeated()
+	Return GetPartyState(0x20)
+ EndFunc
+Func GetPartyState($aFlag)
+    Local $lOffset[4] = [0, 0x18, 0x4C, 0x14]
+    Local $lBitMask = MemoryReadPtr($mBasePointer,$lOffset)
+    Return BitAND($lBitMask[1], $aFlag) > 0
+ EndFunc   ;==>GetPartyState
+
 Func GetNumberOfFoesInRangeOfAgent($aAgent = -2, $aRange = 1250)
 	Local $lAgent, $lDistance
 	Local $lCount = 0
@@ -6219,4 +6092,26 @@ Func GetNumberOfFoesInRangeOfAgent($aAgent = -2, $aRange = 1250)
 		$lCount += 1
 	Next
 	Return $lCount
+ EndFunc   ;==>GetNumberOfFoesInRangeOfAgent
+
+ Func UseStone()
+    Local $IgneousID = 30847
+	For $bag = 1 To 4
+		For $slot = 1 To DllStructGetData(GetBag($bag), 'Slots')
+			Global $item = GetItemBySlot($bag, $slot)
+			If DllStructGetData($item, 'ModelID') == $IgneousID Then
+				UseItem($item)
+				RndSleep(500)
+				Return
+			EndIf
+		Next
+	Next
  EndFunc
+
+ Func HasEffect($aEffectSkillID)
+   If DllStructGetData(GetEffect($aEffectSkillID), "SkillID") == 0 Then
+	  Return False
+   Else
+	  Return True
+   EndIf
+EndFunc
